@@ -8,8 +8,21 @@ namespace Network_Server
 {
     class Program
     {
-        static void Main(string[] args)
+        /// <summary>
+        /// The server.
+        /// </summary>
+        private static GameServer server;
+
+        /// <summary>
+        /// The main entry point of the application.
+        /// </summary>
+        /// <param name="args">
+        /// The args.
+        /// </param>
+        private static void Main(string[] args)
         {
+            server = new GameServer(5030);
+            server.Lobby();
         }
     }
 }
