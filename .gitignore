@@ -35,3 +35,6 @@ sysinfo.txt
 Network-Client/Library/
 Network-Client/Temp/
 Network-Client/UnityPackageManager/
+Network-Server/Network-Server/bin/
+Network-Server/Network-Server/obj/
+*.lock
