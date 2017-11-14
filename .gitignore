@@ -32,3 +32,6 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+Network-Client/Library/
+Network-Client/Temp/
+Network-Client/UnityPackageManager/
