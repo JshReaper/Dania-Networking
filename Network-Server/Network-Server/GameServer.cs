@@ -106,6 +106,47 @@
         }
 
         /// <summary>
+        /// The receive packet.
+        /// </summary>
+        /// <param name="client">
+        /// The client.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Task"/>.
+        /// </returns>
+        public async Task<GamePacket> ReceivePacket(TcpClient client)
+        {
+            GamePacket packet = null;
+            try
+            {
+                // First check there is data available
+                if (client.Available == 0)
+                    return null;
+                NetworkStream msgStream = client.GetStream();
+
+                // There must be some incoming data, the first two bytes are the size of the Packet
+                byte[] lengthBuffer = new byte[2];
+                await msgStream.ReadAsync(lengthBuffer, 0, 2);
+                ushort packetByteSize = BitConverter.ToUInt16(lengthBuffer, 0);
+
+                // Now read that many bytes from what's left in the stream, it must be the Packet
+                byte[] jsonBuffer = new byte[packetByteSize];
+                await msgStream.ReadAsync(jsonBuffer, 0, jsonBuffer.Length);
+
+                // Convert it into a packet datatype
+                string jsonString = Encoding.UTF8.GetString(jsonBuffer);
+                packet = GamePacket.FromJson(jsonString);
+            }
+            catch (Exception e)
+            {
+                // There was an issue in receiving
+                Console.WriteLine("There was an issue sending a packet to {0}.", client.Client.RemoteEndPoint);
+                Console.WriteLine("Reason: {0}", e.Message);
+            }
+            return packet;
+        }
+
+        /// <summary>
         /// Handles new connections.
         /// </summary>
         /// <returns>
