@@ -21,7 +21,7 @@ namespace Network_Server
         /// </param>
         private static void Main(string[] args)
         {
-            server = new GameServer(5030);
+            server = new GameServer(42424);
             server.Lobby();
         }
     }
