@@ -144,7 +144,8 @@
                 Console.WriteLine("Reason: {0}", e.Message);
             }
             return packet;
-        }
+        }
+
 
         /// <summary>
         /// Handles new connections.
