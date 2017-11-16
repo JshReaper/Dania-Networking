@@ -79,7 +79,7 @@
                 {
                     foreach (var client in this.lobby)
                     {
-                        newConnectionTasks.Add(this.UpdateClient(client,gamePackets));
+                        newConnectionTasks.Add(this.UpdateClient(client, gamePackets));
                     }
                     this.newDataAvailable = false;
                     gamePackets.Clear();
@@ -181,9 +181,8 @@
             // Puts the clients in the lobby
             this.clients.Add(newClient);
             this.lobby.Add(newClient);
-            string msg = "Welcome to the lobby, please wait for the game to start";
-            await this.SendPacket(newClient, new GamePacket("message", msg));
-
+            await this.SendPacket(newClient, new GamePacket("myId", this.lobby.IndexOf(newClient).ToString()));
+           
             // broadcast to all players there is a new player
             foreach (var client in this.lobby)
             {
