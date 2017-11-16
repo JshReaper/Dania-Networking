@@ -27,6 +27,8 @@
         /// </summary>
         private readonly List<TcpClient> lobby;
 
+        private bool newDataAvailable;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="GameServer"/> class.
         /// </summary>
@@ -52,12 +54,12 @@
             var newConnectionTasks = new List<Task>();
             Console.WriteLine("Lobby open");
             bool runLobby = true;
-
+            var gamePackets = new List<GamePacket>();
             // Starts our listener
             this.listener.Start();
 
             // Executes the lobby
-            while (runLobby) 
+            while (runLobby)
             {
                 // Waits for new connections
                 if (this.listener.Pending())
@@ -65,9 +67,26 @@
                     // Add new connection and say welcome
                     newConnectionTasks.Add(this.HandleNewConnection());
                 }
+                foreach (var client in this.lobby)
+                {
+                    if (client.Available > 0)
+                    {
+                        gamePackets.Add(this.ReceivePacket(client).Result);
+                        this.newDataAvailable = true;
+                    }
+                }
+                if (this.newDataAvailable)
+                {
+                    foreach (var client in this.lobby)
+                    {
+                        newConnectionTasks.Add(this.UpdateClient(client,gamePackets));
+                    }
+                    this.newDataAvailable = false;
+                    gamePackets.Clear();
+                }
             }
         }
-        
+
 
         /// <summary>
         /// send a packet to a client.
@@ -164,6 +183,41 @@
             this.lobby.Add(newClient);
             string msg = "Welcome to the lobby, please wait for the game to start";
             await this.SendPacket(newClient, new GamePacket("message", msg));
+
+            // broadcast to all players there is a new player
+            foreach (var client in this.lobby)
+            {
+                await this.SendPacket(client, new GamePacket("id", this.lobby.IndexOf(newClient).ToString()));
+            }
+        }
+
+        /// <summary>
+        /// updates a client.
+        /// </summary>
+        /// <param name="client">
+        /// The client.
+        /// </param>
+        /// <param name="gamePackets">
+        /// The game packets.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Task"/>.
+        /// </returns>
+        private async Task UpdateClient(TcpClient client, List<GamePacket> gamePackets)
+        {
+            try
+            {
+                foreach (var gamePacket in gamePackets)
+                {
+                    await this.SendPacket(client, gamePacket);
+                }
+                
+            }
+            catch
+            {
+                // ignored
+            }
         }
     }
+
 }
