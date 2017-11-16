@@ -15,6 +15,10 @@ public class Client : MonoBehaviour {
     private int _port;
     private NetworkStream msgStream = null;
     private Dictionary<string, Func<string, Task>> commandHandlers = new Dictionary<string, Func<string, Task>>();
+    [SerializeField]
+    private GameObject networkManager;
+    [SerializeField]
+    private GameObject myClientPlayer;
 
     // Use this for initialization
     void Start () {
@@ -41,18 +45,33 @@ public class Client : MonoBehaviour {
         {
             Debug.Log("Connected to the server at " + _client.Client.RemoteEndPoint);
 
-            //_running = true;
-            //// Get the message stream
-            //msgStream = _client.GetStream();
+            _running = true;
+            // Get the message stream
+            msgStream = _client.GetStream();
             //// Hook up some packet command handlers
             //commandHandlers["message"] = HandleMessage;
             //// Hook up some packet command handlers
             //commandHandlers["input"] = HandleInput;
+            commandHandlers["id"] = HandleId;
+            commandHandlers["myId"] = HandleMyId;
             //Run();
-
 
         }
     }
+    private async Task HandleId(string message)
+    {
+
+
+
+    }
+
+    private async Task HandleMyId(string message)
+    {
+
+
+
+    }
+
     private async Task HandleIncomingPackets()
     {
         try
@@ -79,6 +98,22 @@ public class Client : MonoBehaviour {
                 {
                 }
             }
+        }
+        catch (Exception) { }
+    }
+    private async Task SendPacket(GamePacket packet)
+    {
+        try
+        {
+            // convert JSON to buffer and its length to a 16 bit unsigned integer buffer
+            byte[] jsonBuffer = Encoding.UTF8.GetBytes(packet.ToJson());
+            byte[] lengthBuffer = BitConverter.GetBytes(Convert.ToUInt16(jsonBuffer.Length));
+            // Join the buffers
+            byte[] packetBuffer = new byte[lengthBuffer.Length + jsonBuffer.Length];
+            lengthBuffer.CopyTo(packetBuffer, 0);
+            jsonBuffer.CopyTo(packetBuffer, lengthBuffer.Length);
+            // Send the packet
+            await msgStream.WriteAsync(packetBuffer, 0, packetBuffer.Length);
         }
         catch (Exception) { }
     }
