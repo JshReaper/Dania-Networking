@@ -186,7 +186,11 @@
             // broadcast to all players there is a new player
             foreach (var client in this.lobby)
             {
+                await this.SendPacket(newClient, new GamePacket("id", this.lobby.IndexOf(client).ToString()));
+                if(client != newClient)
+                { 
                 await this.SendPacket(client, new GamePacket("id", this.lobby.IndexOf(newClient).ToString()));
+                }
             }
         }
 
