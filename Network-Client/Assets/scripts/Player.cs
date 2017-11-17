@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour {
-    private int id;
+   [SerializeField]  private int id;
 
     public int MyId { get {return id; } set {id = value; } }
 

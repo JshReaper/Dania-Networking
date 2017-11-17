@@ -86,6 +86,7 @@ public class Client : MonoBehaviour {
     }
     private async Task HandleId(string message)
     {
+        if (this.weCanSpawnOthers) { 
         bool foundId = false;
         foreach (var player in players)
         {
@@ -98,9 +99,10 @@ public class Client : MonoBehaviour {
         {
             GameObject go = GameObject.Instantiate(playerPrefab);
         }
-
+        }
     }
 
+    private bool weCanSpawnOthers;
     private async Task HandleMyId(string message)
     {
         try
@@ -109,6 +111,7 @@ public class Client : MonoBehaviour {
             this.myClientPlayer =  Instantiate(playerPrefab);
             this.myClientPlayer.GetComponent<Player>().MyId = Convert.ToInt32(message);
             this.players.Add(this.myClientPlayer.GetComponent<Player>());
+            this.weCanSpawnOthers = true;
         }
         catch (Exception e)
         {
