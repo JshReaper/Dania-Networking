@@ -7,14 +7,15 @@ using UnityEngine;
 using System.Text;
 using System.Threading.Tasks;
 
+using UnityEngine.UI;
 
 public class Client : MonoBehaviour {
     private TcpClient _client;
     [SerializeField]
-    private string _serverAdress;
+    Text _serverAdress;
     private bool _running;
     [SerializeField]
-    private int _port;
+    Text _port;
     private NetworkStream msgStream = null;
     private Dictionary<string, Func<string, Task>> commandHandlers = new Dictionary<string, Func<string, Task>>();
     [SerializeField]
@@ -24,6 +25,7 @@ public class Client : MonoBehaviour {
     // Use this for initialization
     void Start () {
         players = new List<Player>();
+        _client = new TcpClient();
 	}
 	
 	// Update is called once per frame
@@ -35,7 +37,7 @@ public class Client : MonoBehaviour {
     {
         try
         {
-            _client.Connect(_serverAdress, _port);
+            _client.Connect(_serverAdress.text, Convert.ToInt32(_port.text));
         }
         catch (SocketException se)
         {
