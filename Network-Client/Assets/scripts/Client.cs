@@ -10,19 +10,20 @@ using System.Threading.Tasks;
 
 public class Client : MonoBehaviour {
     private TcpClient _client;
+    [SerializeField]
     private string _serverAdress;
     private bool _running;
+    [SerializeField]
     private int _port;
     private NetworkStream msgStream = null;
     private Dictionary<string, Func<string, Task>> commandHandlers = new Dictionary<string, Func<string, Task>>();
     [SerializeField]
-    private GameObject networkManager;
-    [SerializeField]
     private GameObject myClientPlayer;
+    private List<Player> players;
 
     // Use this for initialization
     void Start () {
-		
+        players = new List<Player>();
 	}
 	
 	// Update is called once per frame
@@ -52,16 +53,38 @@ public class Client : MonoBehaviour {
             //commandHandlers["message"] = HandleMessage;
             //// Hook up some packet command handlers
             //commandHandlers["input"] = HandleInput;
+            commandHandlers["update"] = cmdUpdate;
             commandHandlers["id"] = HandleId;
             commandHandlers["myId"] = HandleMyId;
             //Run();
 
         }
     }
+    private async Task cmdUpdate(string message)
+    {
+        foreach (var player in players)
+        {
+            //if (player.MyId.ToString() == message)
+            //{
+                
+            //}
+        }
+    }
     private async Task HandleId(string message)
     {
+        string[] msg = message.Split(':');
+        bool foundId = false;
+        foreach (var player in players)
+        {
+            if (player.MyId.ToString() == msg[0])
+            {
+                foundId = true;
+            }
+        }
+        if (!foundId)
+        {
 
-
+        }
 
     }
 
