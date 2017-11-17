@@ -98,6 +98,8 @@ public class Client : MonoBehaviour {
         if (!foundId)
         {
             GameObject go = GameObject.Instantiate(playerPrefab);
+                Destroy(go.GetComponent<PlayerController>());
+                this.players.Add(go.GetComponent<Player>());
         }
         }
     }
