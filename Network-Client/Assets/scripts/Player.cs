@@ -5,7 +5,7 @@ using UnityEngine;
 public class Player : MonoBehaviour {
     private int id;
 
-    public int MyId { get {return id; } private set {id = value; } }
+    public int MyId { get {return id; } set {id = value; } }
 
 
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Sockets;
 using System.Net;
 using UnityEngine;
@@ -24,16 +25,25 @@ public class Client : MonoBehaviour {
     private GameObject playerPrefab;
     private List<Player> players;
 
+    private int myId;
+
     // Use this for initialization
     void Start () {
         players = new List<Player>();
         _client = new TcpClient();
-	}
+        string playerinfo = String.Empty;
+        playerinfo += "pos" + transform.position.x.ToString(CultureInfo.InvariantCulture) + "," + transform.position.y.ToString(CultureInfo.InvariantCulture)+ "," + transform.position.z.ToString(CultureInfo.InvariantCulture);
+        playerinfo += " rot " + transform.rotation.x.ToString() + "," + transform.rotation.y.ToString() + "," + transform.rotation.z.ToString();
+    }
 	
 	// Update is called once per frame
-	void Update () {
-		
-	}
+	void Update ()
+	{
+        if (this._running) { 
+	    List<Task> tasks = new List<Task>();
+        tasks.Add(this.HandleIncomingPackets());
+        }
+    }
 
     public void Connect()
     {
@@ -93,9 +103,16 @@ public class Client : MonoBehaviour {
 
     private async Task HandleMyId(string message)
     {
+        try
+        {
 
-
-
+            this.myClientPlayer =  Instantiate(playerPrefab);
+            this.myClientPlayer.GetComponent<Player>().MyId = Convert.ToInt32(message);
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e);
+        }
     }
 
     private async Task HandleIncomingPackets()
