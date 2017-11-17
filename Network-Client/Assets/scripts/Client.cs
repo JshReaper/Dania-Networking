@@ -108,6 +108,7 @@ public class Client : MonoBehaviour {
 
             this.myClientPlayer =  Instantiate(playerPrefab);
             this.myClientPlayer.GetComponent<Player>().MyId = Convert.ToInt32(message);
+            this.players.Add(this.myClientPlayer.GetComponent<Player>());
         }
         catch (Exception e)
         {
