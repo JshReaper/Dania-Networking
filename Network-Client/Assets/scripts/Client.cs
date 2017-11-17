@@ -20,6 +20,8 @@ public class Client : MonoBehaviour {
     private Dictionary<string, Func<string, Task>> commandHandlers = new Dictionary<string, Func<string, Task>>();
     [SerializeField]
     private GameObject myClientPlayer;
+    [SerializeField]
+    private GameObject playerPrefab;
     private List<Player> players;
 
     // Use this for initialization
@@ -59,7 +61,7 @@ public class Client : MonoBehaviour {
             commandHandlers["id"] = HandleId;
             commandHandlers["myId"] = HandleMyId;
             //Run();
-
+            
         }
     }
     private async Task cmdUpdate(string message)
@@ -74,18 +76,17 @@ public class Client : MonoBehaviour {
     }
     private async Task HandleId(string message)
     {
-        string[] msg = message.Split(':');
         bool foundId = false;
         foreach (var player in players)
         {
-            if (player.MyId.ToString() == msg[0])
+            if (player.MyId.ToString() == message)
             {
                 foundId = true;
             }
         }
         if (!foundId)
         {
-
+            GameObject go = GameObject.Instantiate(playerPrefab);
         }
 
     }

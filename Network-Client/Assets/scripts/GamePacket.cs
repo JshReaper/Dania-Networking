@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public class GamePacket : MonoBehaviour {
+public class GamePacket {
 
     [JsonProperty("command")]
     public string Command { get; set; }
