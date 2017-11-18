@@ -13,10 +13,10 @@ using UnityEngine.UI;
 public class Client : MonoBehaviour {
     private TcpClient _client;
     [SerializeField]
-    Text _serverAdress;
+    InputField _serverAdress;
     private bool _running;
     [SerializeField]
-    Text _port;
+    InputField _port;
     private NetworkStream msgStream = null;
     private Dictionary<string, Func<string, Task>> commandHandlers = new Dictionary<string, Func<string, Task>>();
     [SerializeField]
