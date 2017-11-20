@@ -5,7 +5,7 @@ public class PlayerController : MonoBehaviour
 {
 	public GameObject bulletPrefab;
 	public Transform bulletSpawn;
-
+    public bool IsShooting { get; private set; }
 	void Update()
 	{
 		
@@ -17,14 +17,24 @@ public class PlayerController : MonoBehaviour
 
 		if (Input.GetKeyDown(KeyCode.Space))
 		{
+		    this.IsShooting = true;
 			CmdFire();
 		}
+		else
+		{
+		    this.IsShooting = false;
+        }
 
 		if (Input.GetKey(KeyCode.LeftShift))
 		{
-			CmdFire();
+		    this.IsShooting = true;
+            CmdFire();
 			
 		}
+		else
+		{
+		    this.IsShooting = false;
+        }
 	}
 
 	// This [Command] code is called on the Client …
