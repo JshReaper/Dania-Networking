@@ -49,7 +49,7 @@ public class Client : MonoBehaviour {
             tasks.Add(this.HandleIncomingPackets());
             if(this.myClientPlayer != null)
             { 
-            if (this.lastPos != this.myClientPlayer.transform.position || this.lastRot != this.myClientPlayer.transform.rotation)
+            if (this.lastPos != this.myClientPlayer.transform.position || this.lastRot != this.myClientPlayer.transform.rotation || this.myClientPlayer.GetComponent<PlayerController>().IsShooting)
             {
                 this.playerChanged = true;
             }
@@ -225,3 +225,4 @@ public class Client : MonoBehaviour {
         await this.SendPacket(new GamePacket("update", playerinfo));
     }
 }
+
