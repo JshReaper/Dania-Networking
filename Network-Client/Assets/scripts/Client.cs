@@ -77,8 +77,9 @@ public class Client : MonoBehaviour {
     private async Task cmdUpdate(string message)
     {
         string[] splitString = message.Split(':');
-        foreach (var player in players)
-        {
+        if(!(splitString[0] == myClientPlayer.GetComponent<Player>().MyId.ToString()))
+            foreach (var player in players)
+            {
             if (player.MyId.ToString() == splitString[0])
             {
                 Vector3 pos = new Vector3(Convert.ToSingle(splitString[1]), Convert.ToSingle(splitString[2]), Convert.ToSingle(splitString[3]));
