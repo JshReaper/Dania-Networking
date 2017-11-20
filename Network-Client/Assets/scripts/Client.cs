@@ -25,6 +25,10 @@ public class Client : MonoBehaviour {
     private GameObject playerPrefab;
     private List<Player> players;
 
+    private bool playerChanged;
+
+    private Transform lasTransform = new RectTransform();
+
     private int myId;
 
     // Use this for initialization
@@ -43,7 +47,23 @@ public class Client : MonoBehaviour {
         {
             List<Task> tasks = new List<Task>();
             tasks.Add(this.HandleIncomingPackets());
-            tasks.Add(this.SendUpdate());
+            if(this.myClientPlayer != null)
+            { 
+            if (this.lasTransform.position != this.myClientPlayer.transform.position || this.lasTransform.rotation != this.myClientPlayer.transform.rotation)
+            {
+                this.playerChanged = true;
+            }
+            else
+            {
+                this.playerChanged = false;
+            }
+            if (this.playerChanged)
+            {
+                tasks.Add(this.SendUpdate());
+            }
+            this.lasTransform.position = new Vector3(this.myClientPlayer.transform.position.x, this.myClientPlayer.transform.position.y, this.myClientPlayer.transform.position.z);
+            this.lasTransform.rotation = new Quaternion(this.myClientPlayer.transform.rotation.x, this.myClientPlayer.transform.rotation.y, this.myClientPlayer.transform.rotation.z, this.myClientPlayer.transform.rotation.w);
+            }
         }
     }
 
