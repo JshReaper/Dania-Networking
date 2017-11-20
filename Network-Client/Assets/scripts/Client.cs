@@ -90,8 +90,9 @@ public class Client : MonoBehaviour {
         {
             if (player.MyId.ToString() == splitString[0])
             {
-                Vector3 pos = new Vector3(Convert.ToSingle(splitString[1]), Convert.ToSingle(splitString[2]), Convert.ToSingle(splitString[3]));
-                Quaternion rot = new Quaternion(Convert.ToSingle(splitString[4]), Convert.ToSingle(splitString[5]), Convert.ToSingle(splitString[6]), 1);
+
+                Vector3 pos = new Vector3(float.Parse(splitString[1], CultureInfo.InvariantCulture.NumberFormat), float.Parse(splitString[2], CultureInfo.InvariantCulture.NumberFormat), float.Parse(splitString[3], CultureInfo.InvariantCulture.NumberFormat));
+                Quaternion rot = new Quaternion(float.Parse(splitString[4], CultureInfo.InvariantCulture.NumberFormat), float.Parse(splitString[5], CultureInfo.InvariantCulture.NumberFormat), float.Parse(splitString[6], CultureInfo.InvariantCulture.NumberFormat), 1);
                 bool isShooting = Convert.ToBoolean(splitString[7]);
                 int hp = Convert.ToInt32(splitString[8]);
                 player.gameObject.transform.position = pos;

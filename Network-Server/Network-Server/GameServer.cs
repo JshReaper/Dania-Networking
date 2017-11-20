@@ -52,7 +52,7 @@
         {
             // A list for new connection tasks
             // ReSharper disable once CollectionNeverQueried.Local
-            var newConnectionTasks = new List<Task>();
+            var ConnectionTasks = new List<Task>();
             Console.WriteLine("Lobby open");
             bool runLobby = true;
             var gamePackets = new List<GamePacket>();
@@ -65,7 +65,7 @@
                 if (this.listener.Pending())
                 {
                     // Add new connection and say welcome
-                    newConnectionTasks.Add(this.HandleNewConnection());
+                    ConnectionTasks.Add(this.HandleNewConnection());
                 }
                 foreach (var client in this.lobby)
                 {
@@ -79,7 +79,7 @@
                 {
                     foreach (var client in this.lobby)
                     {
-                        newConnectionTasks.Add(this.UpdateClient(client, gamePackets));
+                        ConnectionTasks.Add(this.UpdateClient(client, gamePackets));
                     }
                     this.newDataAvailable = false;
                     gamePackets.Clear();
