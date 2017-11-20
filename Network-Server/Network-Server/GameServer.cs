@@ -5,6 +5,7 @@
     using System.Net;
     using System.Net.Sockets;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -17,6 +18,7 @@
         /// </summary>
         private readonly TcpListener listener;
 
+        private int idToAssign;
         /// <summary>
         /// The connected clients.
         /// </summary>
@@ -181,15 +183,22 @@
             // Puts the clients in the lobby
             this.clients.Add(newClient);
             this.lobby.Add(newClient);
+            idToAssign++;
             await this.SendPacket(newClient, new GamePacket("myId", this.lobby.IndexOf(newClient).ToString()));
-           
+           Thread.Sleep(10);
             // broadcast to all players there is a new player
             foreach (var client in this.lobby)
             {
-                await this.SendPacket(newClient, new GamePacket("id", this.lobby.IndexOf(client).ToString()));
-                if(client != newClient)
-                { 
-                await this.SendPacket(client, new GamePacket("id", this.lobby.IndexOf(newClient).ToString()));
+                if (client != newClient)
+                {
+                    await this.SendPacket(client, new GamePacket("id", this.lobby.IndexOf(newClient).ToString()));
+                }
+            }
+            foreach (var client in this.lobby)
+            {
+                if (client != newClient)
+                {
+                    await this.SendPacket(newClient, new GamePacket("id", this.lobby.IndexOf(client).ToString()));
                 }
             }
         }
@@ -214,7 +223,7 @@
                 {
                     await this.SendPacket(client, gamePacket);
                 }
-                
+                Thread.Sleep(10);
             }
             catch
             {
