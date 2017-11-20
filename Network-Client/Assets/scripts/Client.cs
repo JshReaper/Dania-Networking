@@ -39,9 +39,11 @@ public class Client : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
 	{
-        if (this._running) { 
-	    List<Task> tasks = new List<Task>();
-        tasks.Add(this.HandleIncomingPackets());
+        if (this._running)
+        {
+            List<Task> tasks = new List<Task>();
+            tasks.Add(this.HandleIncomingPackets());
+            tasks.Add(this.SendUpdate());
         }
     }
 
@@ -49,7 +51,14 @@ public class Client : MonoBehaviour {
     {
         try
         {
-            _client.Connect(_serverAdress.text, Convert.ToInt32(_port.text));
+            if (this._serverAdress.text == "" && this._port.text == "")
+            {
+                _client.Connect("dania-jshreaper.northeurope.cloudapp.azure.com", 42424);
+            }
+            else
+            {
+                _client.Connect(_serverAdress.text, Convert.ToInt32(_port.text));
+            }
         }
         catch (SocketException se)
         {
@@ -165,5 +174,20 @@ public class Client : MonoBehaviour {
             await msgStream.WriteAsync(packetBuffer, 0, packetBuffer.Length);
         }
         catch (Exception) { }
+    }
+
+    async Task SendUpdate()
+    {
+        CultureInfo cIn = CultureInfo.InvariantCulture;
+        string playerinfo = this.myClientPlayer.GetComponent<Player>().MyId.ToString(cIn) + 
+            ":" + this.myClientPlayer.transform.position.x.ToString(cIn) + 
+            ":" + this.myClientPlayer.transform.position.y.ToString(cIn) + 
+            ":" + this.myClientPlayer.transform.position.z.ToString(cIn) +
+            ":" + this.myClientPlayer.transform.rotation.x.ToString(cIn) + 
+            ":" + this.myClientPlayer.transform.rotation.y.ToString(cIn) + 
+            ":" + this.myClientPlayer.transform.rotation.z.ToString(cIn) +
+            ":" + this.myClientPlayer.GetComponent<PlayerController>().IsShooting.ToString(cIn) +
+            ":" + this.myClientPlayer.GetComponent<Health>().currentHealth.ToString(cIn);
+        await this.SendPacket(new GamePacket("update", playerinfo));
     }
 }
