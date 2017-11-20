@@ -141,6 +141,7 @@ public class Client : MonoBehaviour {
         {
             GameObject go = GameObject.Instantiate(playerPrefab);
                 Destroy(go.GetComponent<PlayerController>());
+                go.GetComponent<Player>().MyId = Convert.ToInt32(message);
                 this.players.Add(go.GetComponent<Player>());
         }
         }
