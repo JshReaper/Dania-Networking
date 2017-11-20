@@ -42,6 +42,7 @@
 
             // Creates a Listener
             this.listener = new TcpListener(IPAddress.Any, serverPort);
+          //  this.listener.AllowNatTraversal(true);
         }
 
         /// <summary>
@@ -57,7 +58,6 @@
             var gamePackets = new List<GamePacket>();
             // Starts our listener
             this.listener.Start();
-
             // Executes the lobby
             while (runLobby)
             {
