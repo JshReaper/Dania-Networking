@@ -27,8 +27,8 @@ public class Client : MonoBehaviour {
 
     private bool playerChanged;
 
-    private Transform lasTransform = new RectTransform();
-
+    private Vector3 lastPos = Vector3.zero;
+    Quaternion lastRot = Quaternion.identity;
     private int myId;
 
     // Use this for initialization
@@ -49,7 +49,7 @@ public class Client : MonoBehaviour {
             tasks.Add(this.HandleIncomingPackets());
             if(this.myClientPlayer != null)
             { 
-            if (this.lasTransform.position != this.myClientPlayer.transform.position || this.lasTransform.rotation != this.myClientPlayer.transform.rotation)
+            if (this.lastPos != this.myClientPlayer.transform.position || this.lastRot != this.myClientPlayer.transform.rotation)
             {
                 this.playerChanged = true;
             }
@@ -61,8 +61,8 @@ public class Client : MonoBehaviour {
             {
                 tasks.Add(this.SendUpdate());
             }
-            this.lasTransform.position = new Vector3(this.myClientPlayer.transform.position.x, this.myClientPlayer.transform.position.y, this.myClientPlayer.transform.position.z);
-            this.lasTransform.rotation = new Quaternion(this.myClientPlayer.transform.rotation.x, this.myClientPlayer.transform.rotation.y, this.myClientPlayer.transform.rotation.z, this.myClientPlayer.transform.rotation.w);
+            this.lastPos = new Vector3(this.myClientPlayer.transform.position.x, this.myClientPlayer.transform.position.y, this.myClientPlayer.transform.position.z);
+            this.lastRot = new Quaternion(this.myClientPlayer.transform.rotation.x, this.myClientPlayer.transform.rotation.y, this.myClientPlayer.transform.rotation.z, this.myClientPlayer.transform.rotation.w);
             }
         }
     }
