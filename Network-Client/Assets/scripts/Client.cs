@@ -13,10 +13,10 @@ using UnityEngine.UI;
 public class Client : MonoBehaviour {
     private TcpClient _client;
     [SerializeField]
-    Text _serverAdress;
+    InputField _serverAdress;
     private bool _running;
     [SerializeField]
-    Text _port;
+    InputField _port;
     private NetworkStream msgStream = null;
     private Dictionary<string, Func<string, Task>> commandHandlers = new Dictionary<string, Func<string, Task>>();
     [SerializeField]
@@ -85,12 +85,23 @@ public class Client : MonoBehaviour {
     }
     private async Task cmdUpdate(string message)
     {
+        string[] splitString = message.Split(':');
         foreach (var player in players)
         {
-            //if (player.MyId.ToString() == message)
-            //{
-                
-            //}
+            if (player.MyId.ToString() == splitString[0])
+            {
+                Vector3 pos = new Vector3(Convert.ToSingle(splitString[1]), Convert.ToSingle(splitString[2]), Convert.ToSingle(splitString[3]));
+                Quaternion rot = new Quaternion(Convert.ToSingle(splitString[4]), Convert.ToSingle(splitString[5]), Convert.ToSingle(splitString[6]), 1);
+                bool isShooting = Convert.ToBoolean(splitString[7]);
+                int hp = Convert.ToInt32(splitString[8]);
+                player.gameObject.transform.position = pos;
+                player.gameObject.transform.rotation = rot;
+                player.gameObject.GetComponent<Health>().currentHealth = hp;
+                if (isShooting)
+                {
+                    player.gameObject.GetComponent<PlayerController>().CmdFire();
+                }
+            }
         }
     }
     private async Task HandleId(string message)

@@ -194,8 +194,8 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 291916566}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 355, y: 159, z: 0}
-  m_LocalScale: {x: 0.8875, y: 0.8875, z: 0.8875}
+  m_LocalPosition: {x: 453, y: 211.5, z: 0}
+  m_LocalScale: {x: 1.1325, y: 1.1325, z: 1.1325}
   m_Children:
   - {fileID: 543941349}
   - {fileID: 1844558278}
@@ -856,8 +856,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28f10b5fa66fa7543905feb4c5ad9022, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _serverAdress: {fileID: 2088321093}
-  _port: {fileID: 1186236842}
+  _serverAdress: {fileID: 1697202402}
+  _port: {fileID: 1844558279}
   myClientPlayer: {fileID: 0}
   playerPrefab: {fileID: 1581228725922658, guid: cc4580358a494d24bbda03772ca26aa1,
     type: 2}
@@ -944,7 +944,7 @@ MonoBehaviour:
   m_LineType: 0
   m_HideMobileInput: 0
   m_CharacterValidation: 0
-  m_CharacterLimit: 0
+  m_CharacterLimit: 100
   m_OnEndEdit:
     m_PersistentCalls:
       m_Calls: []

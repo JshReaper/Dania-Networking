@@ -40,7 +40,7 @@ public class PlayerController : MonoBehaviour
 	// This [Command] code is called on the Client …
 	// … but it is run on the Server!
 	
-	void CmdFire()
+	public void CmdFire()
 	{
 		// Create the Bullet from the Bullet Prefab
 		var bullet = (GameObject)Instantiate(
