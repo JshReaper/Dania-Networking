@@ -69,23 +69,23 @@
                     // Add new connection and say welcome
                     ConnectionTasks.Add(this.HandleNewConnection());
                 }
-                foreach (var client in this.lobby)
-                {
-                    if (client.Available > 0)
-                    {
-                        gamePackets.Add(this.ReceivePacket(client).Result);
-                        this.newDataAvailable = true;
-                    }
-                }
-                if (this.newDataAvailable)
-                {
-                    foreach (var client in this.lobby)
-                    {
-                        ConnectionTasks.Add(this.UpdateClient(client, gamePackets));
-                    }
-                    this.newDataAvailable = false;
-                    gamePackets.Clear();
-                }
+                //foreach (var client in this.lobby)
+                //{
+                //    if (client.Available > 0)
+                //    {
+                //        gamePackets.Add(this.ReceivePacket(client).Result);
+                //        this.newDataAvailable = true;
+                //    }
+                //}
+                //if (this.newDataAvailable)
+                //{
+                //    foreach (var client in this.lobby)
+                //    {
+                //        ConnectionTasks.Add(this.UpdateClient(client, gamePackets));
+                //    }
+                //    this.newDataAvailable = false;
+                //    gamePackets.Clear();
+                //}
             }
         }
 
