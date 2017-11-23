@@ -11,20 +11,21 @@ using System.Threading.Tasks;
 using UnityEngine.UI;
 
 public class Client : MonoBehaviour {
-    private TcpClient _client;
+    private UdpClient _client;
+    private TcpClient _tcpClient;
+    private NetworkStream msgStream;
     [SerializeField]
     InputField _serverAdress;
     private bool _running;
     [SerializeField]
     InputField _port;
-    private NetworkStream msgStream = null;
     private Dictionary<string, Func<string, Task>> commandHandlers = new Dictionary<string, Func<string, Task>>();
     [SerializeField]
     private GameObject myClientPlayer;
     [SerializeField]
     private GameObject playerPrefab;
     private List<Player> players;
-
+    private GamePacket gp = null;
     private bool playerChanged;
 
     private Vector3 lastPos = Vector3.zero;
@@ -34,7 +35,8 @@ public class Client : MonoBehaviour {
     // Use this for initialization
     void Start () {
         players = new List<Player>();
-        _client = new TcpClient();
+        _client = new UdpClient();
+        _tcpClient = new TcpClient();
         string playerinfo = String.Empty;
         playerinfo += "pos" + transform.position.x.ToString(CultureInfo.InvariantCulture) + "," + transform.position.y.ToString(CultureInfo.InvariantCulture)+ "," + transform.position.z.ToString(CultureInfo.InvariantCulture);
         playerinfo += " rot " + transform.rotation.x.ToString() + "," + transform.rotation.y.ToString() + "," + transform.rotation.z.ToString();
@@ -74,24 +76,25 @@ public class Client : MonoBehaviour {
             if (this._serverAdress.text == "" && this._port.text == "")
             {
                 _client.Connect("dania-jshreaper.northeurope.cloudapp.azure.com", 42424);
+                _tcpClient.Connect("dania-jshreaper.northeurope.cloudapp.azure.com", 42424);
             }
             else
             {
                 _client.Connect(_serverAdress.text, Convert.ToInt32(_port.text));
+                _tcpClient.Connect(_serverAdress.text, Convert.ToInt32(_port.text));
             }
         }
-        catch (SocketException se)
+        catch (Exception e)
         {
-            Debug.Log("[ERROR] " + se.Message);
+            Debug.Log("[ERROR] " + e.Message);
         }
 
-        if (_client.Connected)
+        if (_client.Client.Connected && _tcpClient.Connected)
         {
             Debug.Log("Connected to the server at " + _client.Client.RemoteEndPoint);
 
             _running = true;
-            // Get the message stream
-            msgStream = _client.GetStream();
+            msgStream = _tcpClient.GetStream();
             //// Hook up some packet command handlers
             //commandHandlers["message"] = HandleMessage;
             //// Hook up some packet command handlers
@@ -169,8 +172,9 @@ public class Client : MonoBehaviour {
         try
         {
             // Check for new incomding messages
-            if (_client.Available > 0)
+            if (_tcpClient.Available > 0)
             {
+
                 // There must be some incoming data, the first two bytes are the size of the Packet
                 byte[] lengthBuffer = new byte[2];
                 await msgStream.ReadAsync(lengthBuffer, 0, 2);
@@ -182,6 +186,7 @@ public class Client : MonoBehaviour {
                 string jsonString = Encoding.UTF8.GetString(jsonBuffer);
                 GamePacket packet = GamePacket.FromJson(jsonString);
                 // Dispatch it
+                if(packet.Command != "update")
                 try
                 {
                     await commandHandlers[packet.Command](packet.Message);
@@ -190,30 +195,77 @@ public class Client : MonoBehaviour {
                 {
                 }
             }
+            if (_client.Available > 0)
+            {
+                gp = null;
+
+                _client.BeginReceive(DataReceived, _client);
+                // There must be some incoming data, the first two bytes are the size of the Packet
+                //byte[] lengthBuffer = new byte[2];
+                //await msgStream.ReadAsync(lengthBuffer, 0, 2);
+                //ushort packetByteSize = BitConverter.ToUInt16(lengthBuffer, 0);
+                // Now read that many bytes from what's left in the stream, it must be the Packet
+                //byte[] jsonBuffer = new byte[packetByteSize];
+                //await msgStream.ReadAsync(jsonBuffer, 0, jsonBuffer.Length);
+                // Convert it into a packet datatype
+                //string jsonString = Encoding.UTF8.GetString(jsonBuffer);
+                //GamePacket packet = GamePacket.FromJson(jsonString);
+                // Dispatch it
+                if(gp.Command == "update")
+                try
+                {
+                    await commandHandlers[gp.Command](gp.Message);
+                }
+                catch (KeyNotFoundException)
+                {
+                }
+            }
         }
         catch (Exception) { }
     }
+    private void DataReceived(IAsyncResult ar)
+    {
+        UdpClient c = (UdpClient)ar.AsyncState;
+        IPEndPoint receivedIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
+
+        Byte[] receivedBytes = c.EndReceive(ar, ref receivedIpEndPoint);
+
+        // Convert data to UTF8 and print in console
+        string receivedText = Encoding.UTF8.GetString(receivedBytes);
+        gp = GamePacket.FromJson(receivedText);
+
+        // Restart listening for udp data packages
+        c.BeginReceive(DataReceived, ar.AsyncState);
+       
+    }
+
     private async Task SendPacket(GamePacket packet)
     {
         try
         {
             // convert JSON to buffer and its length to a 16 bit unsigned integer buffer
-            byte[] jsonBuffer = Encoding.UTF8.GetBytes(packet.ToJson());
+            string str = packet.ToJson();
+            byte[] jsonBuffer = Encoding.UTF8.GetBytes(str);
             byte[] lengthBuffer = BitConverter.GetBytes(Convert.ToUInt16(jsonBuffer.Length));
             // Join the buffers
-            byte[] packetBuffer = new byte[lengthBuffer.Length + jsonBuffer.Length];
+            byte[] packetBuffer = new byte[jsonBuffer.Length];
             lengthBuffer.CopyTo(packetBuffer, 0);
-            jsonBuffer.CopyTo(packetBuffer, lengthBuffer.Length);
+            //jsonBuffer.CopyTo(packetBuffer, lengthBuffer.Length);
             // Send the packet
-            await msgStream.WriteAsync(packetBuffer, 0, packetBuffer.Length);
+            //await msgStream.WriteAsync(packetBuffer, 0, packetBuffer.Length);
+            //_client.Send(packetBuffer, packetBuffer.Length);
+            _client.Send(jsonBuffer,jsonBuffer.Length);
         }
-        catch (Exception) { }
+        catch (Exception se)
+        {
+            Debug.Log("[ERROR] : Could not send the gamePacket : \n" + se);
+        }
     }
-
+    string playerinfo;
     async Task SendUpdate()
     {
         CultureInfo cIn = CultureInfo.InvariantCulture;
-        string playerinfo = this.myClientPlayer.GetComponent<Player>().MyId.ToString(cIn) + 
+        playerinfo = this.myClientPlayer.GetComponent<Player>().MyId.ToString(cIn) + 
             ":" + this.myClientPlayer.transform.position.x.ToString(cIn) + 
             ":" + this.myClientPlayer.transform.position.y.ToString(cIn) + 
             ":" + this.myClientPlayer.transform.position.z.ToString(cIn) +
