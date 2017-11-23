@@ -124,7 +124,7 @@ public class Client : MonoBehaviour {
                 player.gameObject.GetComponent<Health>().currentHealth = hp;
                 if (isShooting)
                 {
-                    player.gameObject.GetComponent<PlayerController>().CmdFire();
+                    player.gameObject.GetComponent<Player>().CmdFire();
                 }
             }
         }
