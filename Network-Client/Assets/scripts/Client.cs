@@ -66,7 +66,18 @@ public class Client : MonoBehaviour {
             this.lastPos = new Vector3(this.myClientPlayer.transform.position.x, this.myClientPlayer.transform.position.y, this.myClientPlayer.transform.position.z);
             this.lastRot = new Quaternion(this.myClientPlayer.transform.rotation.x, this.myClientPlayer.transform.rotation.y, this.myClientPlayer.transform.rotation.z, this.myClientPlayer.transform.rotation.w);
             }
+            //if (gp != null)
+            //    try
+            //    {
+            //        cmdUpdate(gp.Message);
+            //        //await commandHandlers[gp.Command](gp.Message);
+            //        // gp = null;
+            //    }
+            //    catch (KeyNotFoundException)
+            //    {
+            //    }
         }
+
     }
 
     public void Connect()
@@ -99,14 +110,14 @@ public class Client : MonoBehaviour {
             //commandHandlers["message"] = HandleMessage;
             //// Hook up some packet command handlers
             //commandHandlers["input"] = HandleInput;
-            commandHandlers["update"] = cmdUpdate;
+            //commandHandlers["update"] = cmdUpdate;
             commandHandlers["id"] = HandleId;
             commandHandlers["myId"] = HandleMyId;
             //Run();
             
         }
     }
-    private async Task cmdUpdate(string message)
+    private void cmdUpdate(string message)
     {
         string[] splitString = message.Split(':');
         if(!(splitString[0] == myClientPlayer.GetComponent<Player>().MyId.ToString()))
@@ -195,11 +206,16 @@ public class Client : MonoBehaviour {
                 {
                 }
             }
-            if (_client.Available > 0)
+            
+            try
             {
-                gp = null;
 
-                _client.BeginReceive(DataReceived, _client);
+
+                //if (_client.Available > 0)
+                //{
+
+
+                    _client.BeginReceive(DataReceived, _client);
                 // There must be some incoming data, the first two bytes are the size of the Packet
                 //byte[] lengthBuffer = new byte[2];
                 //await msgStream.ReadAsync(lengthBuffer, 0, 2);
@@ -211,14 +227,21 @@ public class Client : MonoBehaviour {
                 //string jsonString = Encoding.UTF8.GetString(jsonBuffer);
                 //GamePacket packet = GamePacket.FromJson(jsonString);
                 // Dispatch it
-                if(gp.Command == "update")
-                try
-                {
-                    await commandHandlers[gp.Command](gp.Message);
-                }
-                catch (KeyNotFoundException)
-                {
-                }
+                if (gp != null)
+                    try
+                    {
+                        cmdUpdate(gp.Message);
+                        //await commandHandlers[gp.Command](gp.Message);
+                        // gp = null;
+                    }
+                    catch (KeyNotFoundException)
+                    {
+                    }
+                    //}
+            }
+            catch (Exception)
+            {
+
             }
         }
         catch (Exception) { }
@@ -229,11 +252,12 @@ public class Client : MonoBehaviour {
         IPEndPoint receivedIpEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
         Byte[] receivedBytes = c.EndReceive(ar, ref receivedIpEndPoint);
-
+        Debug.Log(receivedIpEndPoint.ToString());
         // Convert data to UTF8 and print in console
         string receivedText = Encoding.UTF8.GetString(receivedBytes);
         gp = GamePacket.FromJson(receivedText);
-
+        Debug.Log(gp.ToString());
+        
         // Restart listening for udp data packages
         c.BeginReceive(DataReceived, ar.AsyncState);
        
