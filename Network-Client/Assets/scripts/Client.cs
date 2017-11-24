@@ -195,9 +195,10 @@ public class Client : MonoBehaviour {
                 {
                 }
             }
+            
             if (_client.Available > 0)
             {
-                gp = null;
+                
 
                 _client.BeginReceive(DataReceived, _client);
                 // There must be some incoming data, the first two bytes are the size of the Packet
@@ -211,11 +212,12 @@ public class Client : MonoBehaviour {
                 //string jsonString = Encoding.UTF8.GetString(jsonBuffer);
                 //GamePacket packet = GamePacket.FromJson(jsonString);
                 // Dispatch it
-                if(gp.Command == "update")
+                //if(gp != null)
                 try
                 {
                     await commandHandlers[gp.Command](gp.Message);
-                }
+                       // gp = null;
+                    }
                 catch (KeyNotFoundException)
                 {
                 }
