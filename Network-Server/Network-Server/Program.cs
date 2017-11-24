@@ -95,6 +95,27 @@ namespace Network_Server
                     {
                         foreach (var connectedPlayer in this.connectedPlayers)
                         {
+                            List<GamePacket> toremove = new List<GamePacket>();
+                            foreach (var gamePacket in this.packetsToSend)
+                            {
+                               string[] split1 = gamePacket.Message.Split(':');
+                                foreach (var packet in this.packetsToSend)
+                                {
+                                    if(packet != gamePacket)
+                                    { 
+                                    string[] split2 = packet.Message.Split(':');
+                                    if (split2[0] == split1[0])
+                                    {
+                                        toremove.Add(gamePacket);
+                                        break;
+                                    }
+                                    }
+                                }
+                            }
+                            foreach (var gamePacket in toremove)
+                            {
+                                this.packetsToSend.Remove(gamePacket);
+                            }
 
                             foreach (var gamePacket in this.packetsToSend)
                             {
@@ -102,7 +123,8 @@ namespace Network_Server
                                 {
                                     connectedPlayer.Serialize();
                                     byte[] toSend = Encoding.UTF8.GetBytes(gamePacket.ToJson());
-                                    this.server.Send(toSend, toSend.Length, connectedPlayer);
+                                    this.server.SendAsync(toSend, toSend.Length, connectedPlayer);
+                                    
                                 }
                                 catch (Exception e)
                                 {
@@ -150,7 +172,8 @@ namespace Network_Server
                 // Convert data to UTF8 and print in console
                 string receivedText = Encoding.UTF8.GetString(receivedBytes);
                 this.packetsToSend.Add(GamePacket.FromJson(receivedText));
-                Console.Write(receivedIpEndPoint + ": " + receivedText + Environment.NewLine);
+
+              Console.Write(receivedIpEndPoint + ": " + receivedText + Environment.NewLine);
                 bool alreadyConnected = false;
                 try
                 {
