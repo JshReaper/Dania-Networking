@@ -98,17 +98,17 @@ namespace Network_Server
                             List<GamePacket> toremove = new List<GamePacket>();
                             foreach (var gamePacket in this.packetsToSend)
                             {
-                               string[] split1 = gamePacket.Message.Split(':');
+                                string[] split1 = gamePacket.Message.Split(':');
                                 foreach (var packet in this.packetsToSend)
                                 {
-                                    if(packet != gamePacket)
-                                    { 
-                                    string[] split2 = packet.Message.Split(':');
-                                    if (split2[0] == split1[0])
+                                    if (packet != gamePacket)
                                     {
-                                        toremove.Add(gamePacket);
-                                        break;
-                                    }
+                                        string[] split2 = packet.Message.Split(':');
+                                        if (split2[0] == split1[0])
+                                        {
+                                            toremove.Add(gamePacket);
+                                            break;
+                                        }
                                     }
                                 }
                             }
