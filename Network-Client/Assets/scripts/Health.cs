@@ -34,8 +34,6 @@ public class Health : MonoBehaviour
 			else
 			{
 				currentHealth = maxHealth;
-
-				
 			}
 		}
 
