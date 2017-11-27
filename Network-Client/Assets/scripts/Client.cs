@@ -7,7 +7,6 @@ using System.Net;
 using UnityEngine;
 using System.Text;
 using System.Threading.Tasks;
-
 using UnityEngine.UI;
 
 public class Client : MonoBehaviour {
@@ -94,8 +93,8 @@ public class Client : MonoBehaviour {
         {
             if (this._serverAdress.text == "" && this._port.text == "")
             {
-                _client.Connect("dania-jshreaper.northeurope.cloudapp.azure.com", 42424);
-                _tcpClient.Connect("dania-jshreaper.northeurope.cloudapp.azure.com", 42424);
+                _client.Connect("62.116.202.203", 42424);
+                _tcpClient.Connect("62.116.202.203", 42424);
             }
             else
             {
@@ -121,6 +120,7 @@ public class Client : MonoBehaviour {
             //commandHandlers["update"] = cmdUpdate;
             commandHandlers["id"] = HandleId;
             commandHandlers["myId"] = HandleMyId;
+            commandHandlers["disconnect"] = HandleDisconnect;
             //Run();
             
         }
@@ -201,6 +201,35 @@ public class Client : MonoBehaviour {
             Debug.Log(e);
         }
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    private async Task HandleDisconnect(string message)
+    {
+        GameObject goToDelete = null;
+        foreach (Player p in players)
+        {
+            if (p.MyId.ToString() == message)
+            {
+                goToDelete = p.gameObject;
+                
+            }
+        }
+        players.Remove(goToDelete.GetComponent<Player>());
+        if(goToDelete != null)
+        GameObject.Destroy(goToDelete);
+        foreach (Player p in players)
+        {
+            if (p.MyId > Convert.ToInt32(message))
+            {
+                p.MyId -= 1;
+            }
+        }
+
+    }
+
     /// <summary>
     /// Håntere indkommende beskeder fra TCP klienten den kan kun gøre brug af 2 metoder myID og Id metoderne.
     /// </summary>
