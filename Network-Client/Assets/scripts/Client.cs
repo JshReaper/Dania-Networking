@@ -32,7 +32,10 @@ public class Client : MonoBehaviour {
     Quaternion lastRot = Quaternion.identity;
     private int myId;
 
-    // Use this for initialization
+    
+    /// <summary>
+    /// Sætter de standarte værdier og lignende, og initiere vores klienter
+    /// </summary>
     void Start () {
         players = new List<Player>();
         _client = new UdpClient();
@@ -41,8 +44,9 @@ public class Client : MonoBehaviour {
         playerinfo += "pos" + transform.position.x.ToString(CultureInfo.InvariantCulture) + "," + transform.position.y.ToString(CultureInfo.InvariantCulture)+ "," + transform.position.z.ToString(CultureInfo.InvariantCulture);
         playerinfo += " rot " + transform.rotation.x.ToString() + "," + transform.rotation.y.ToString() + "," + transform.rotation.z.ToString() + "," + transform.rotation.w.ToString();
     }
-	
-	// Update is called once per frame
+	/// <summary>
+    /// update sørger for at vores tasks bliver kørt hvert frame, og sørger for at kun hvis spilleren har bevæget sig sender vi nyt data
+    /// </summary>
 	void Update ()
 	{
         if (this._running)
@@ -80,7 +84,10 @@ public class Client : MonoBehaviour {
         }
 
     }
-
+    /// <summary>
+    /// Denne metode konnekter vores klienter til serveren, endten den standarte som vi har lavet eller en 
+    /// "unofficial" server som en spiller har sat op ved at indskrive info i text felterne
+    /// </summary>
     public void Connect()
     {
         try
@@ -118,6 +125,11 @@ public class Client : MonoBehaviour {
             
         }
     }
+    /// <summary>
+    /// cmdUpdate sørger for at de beskeder der kommer fra serveren om andre spilleres handlinger bliver udført clientside også
+    /// den sætter deres nye position og roteríng lige med hvad de sidst sendte
+    /// </summary>
+    /// <param name="message"></param>
     private void cmdUpdate(string message)
     {
         string[] splitString = message.Split(':');
@@ -141,6 +153,12 @@ public class Client : MonoBehaviour {
             }
         }
     }
+    /// <summary>
+    /// Når man første gang konnekter eller andre konnekter til serveren sendes deres id ud til 
+    /// alle andre og det hånteres her, ved at lave en ny spiller og indsætte den i verdenen
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
     private async Task HandleId(string message)
     {
         if (this.weCanSpawnOthers) { 
@@ -163,6 +181,11 @@ public class Client : MonoBehaviour {
     }
 
     private bool weCanSpawnOthers;
+    /// <summary>
+    /// Første gang man konnekter til serveren sendes der et ID tilbage til spilleren, det hånteres her
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
     private async Task HandleMyId(string message)
     {
         try
@@ -178,7 +201,10 @@ public class Client : MonoBehaviour {
             Debug.Log(e);
         }
     }
-
+    /// <summary>
+    /// Håntere indkommende beskeder fra TCP klienten den kan kun gøre brug af 2 metoder myID og Id metoderne.
+    /// </summary>
+    /// <returns></returns>
     private async Task HandleIncomingPackets()
     {
         try
@@ -247,6 +273,12 @@ public class Client : MonoBehaviour {
         }
         catch (Exception) { }
     }
+
+    /// <summary>
+    /// Her tjekker vi om der er kommet nogle beskeder siden vi sidst tjekkede
+    /// hvis der er kommet information så kommer vi det ind i en gamepacket gp og den bruges i en anden metode "cmdUpdate" når den er sat lige med noget
+    /// </summary>
+    /// <param name="ar"></param>
     private void DataReceived(IAsyncResult ar)
     {
         UdpClient c = (UdpClient)ar.AsyncState;
@@ -263,7 +295,12 @@ public class Client : MonoBehaviour {
         c.BeginReceive(DataReceived, ar.AsyncState);
        
     }
-
+    /// <summary>
+    /// Sender vores player information som en gamepacket via UDP
+    /// information sendes via UDP vi tjekker ikke op på om det kom frem da vi arbejder med time critical data.
+    /// </summary>
+    /// <param name="packet"></param>
+    /// <returns></returns>
     private async Task SendPacket(GamePacket packet)
     {
         try
@@ -287,6 +324,11 @@ public class Client : MonoBehaviour {
         }
     }
     string playerinfo;
+
+    /// <summary>
+    /// SendUpdate laver vores player data om til en streng som vi så lavet til en gamepacket og sender via metoden SendPacket
+    /// </summary>
+    /// <returns></returns>
     async Task SendUpdate()
     {
         CultureInfo cIn = CultureInfo.InvariantCulture;
