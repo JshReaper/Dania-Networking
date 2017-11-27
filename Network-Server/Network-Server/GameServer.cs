@@ -80,6 +80,7 @@
                         if (disconnected)
                         {
                             clientsToRemove.Add(client);
+                            Console.WriteLine(this.lobby.IndexOf(client).ToString());
                             foreach (var tcpClient in this.lobby)
                             {
                                 ConnectionTasks.Add(
