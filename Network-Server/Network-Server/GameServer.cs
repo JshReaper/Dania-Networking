@@ -44,7 +44,7 @@
 
             // Creates a Listener
             this.listener = new TcpListener(IPAddress.Any, serverPort);
-          //  this.listener.AllowNatTraversal(true);
+            //  this.listener.AllowNatTraversal(true);
         }
 
         /// <summary>
@@ -69,6 +69,36 @@
                     // Add new connection and say welcome
                     ConnectionTasks.Add(this.HandleNewConnection());
                 }
+                try
+                {
+                    TcpClient toDisconnect = null;
+                    foreach (var client in this.lobby)
+                    {
+                        bool part1 = client.Client.Poll(1000, SelectMode.SelectRead);
+                        bool part2 = client.Client.Available == 0;
+                        bool disconnected = part2 && part1;
+                        if (disconnected)
+                        {
+                            toDisconnect = client;
+                            foreach (var tcpClient in this.lobby)
+                            {
+                                ConnectionTasks.Add(
+                                    this.SendPacket(
+                                        tcpClient,
+                                        new GamePacket("disconnect", this.lobby.IndexOf(client).ToString())));
+                            }
+                        }
+                    }
+                    if (toDisconnect != null)
+                    {
+                        this.clients.Remove(toDisconnect);
+                        this.lobby.Remove(toDisconnect);
+                    }
+                }
+                catch
+                {
+                }
+
                 //foreach (var client in this.lobby)
                 //{
                 //    if (client.Available > 0)
@@ -89,6 +119,7 @@
             }
         }
 
+        
 
         /// <summary>
         /// send a packet to a client.
@@ -183,9 +214,9 @@
             // Puts the clients in the lobby
             this.clients.Add(newClient);
             this.lobby.Add(newClient);
-            idToAssign++;
+         // idToAssign++;
             await this.SendPacket(newClient, new GamePacket("myId", this.lobby.IndexOf(newClient).ToString()));
-           Thread.Sleep(10);
+            Thread.Sleep(10);
             // broadcast to all players there is a new player
             foreach (var client in this.lobby)
             {
