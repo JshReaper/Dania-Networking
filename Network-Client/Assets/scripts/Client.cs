@@ -214,10 +214,20 @@ public class Client : MonoBehaviour {
             if (p.MyId.ToString() == message)
             {
                 goToDelete = p.gameObject;
+                
             }
         }
+        players.Remove(goToDelete.GetComponent<Player>());
         if(goToDelete != null)
         GameObject.Destroy(goToDelete);
+        foreach (Player p in players)
+        {
+            if (p.MyId > Convert.ToInt32(message))
+            {
+                p.MyId -= 1;
+            }
+        }
+
     }
 
     /// <summary>
