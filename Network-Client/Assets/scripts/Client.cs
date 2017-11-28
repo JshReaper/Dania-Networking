@@ -9,7 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.UI;
 
-public class Client : MonoBehaviour {
+public class Client : MonoBehaviour
+{
+    private NetworkClient networkClient;
     private UdpClient _client;
     private TcpClient _tcpClient;
     private NetworkStream msgStream;
@@ -31,43 +33,45 @@ public class Client : MonoBehaviour {
     Quaternion lastRot = Quaternion.identity;
     private int myId;
 
-    
+
     /// <summary>
     /// Sætter de standarte værdier og lignende, og initiere vores klienter
     /// </summary>
-    void Start () {
+    void Start()
+    {
+        networkClient = new NetworkClient();
         players = new List<Player>();
         _client = new UdpClient();
         _tcpClient = new TcpClient();
         string playerinfo = String.Empty;
-        playerinfo += "pos" + transform.position.x.ToString(CultureInfo.InvariantCulture) + "," + transform.position.y.ToString(CultureInfo.InvariantCulture)+ "," + transform.position.z.ToString(CultureInfo.InvariantCulture);
+        playerinfo += "pos" + transform.position.x.ToString(CultureInfo.InvariantCulture) + "," + transform.position.y.ToString(CultureInfo.InvariantCulture) + "," + transform.position.z.ToString(CultureInfo.InvariantCulture);
         playerinfo += " rot " + transform.rotation.x.ToString() + "," + transform.rotation.y.ToString() + "," + transform.rotation.z.ToString() + "," + transform.rotation.w.ToString();
     }
-	/// <summary>
+    /// <summary>
     /// update sørger for at vores tasks bliver kørt hvert frame, og sørger for at kun hvis spilleren har bevæget sig sender vi nyt data
     /// </summary>
-	void Update ()
-	{
+    void Update()
+    {
         if (this._running)
         {
             List<Task> tasks = new List<Task>();
             tasks.Add(this.HandleIncomingPackets());
-            if(this.myClientPlayer != null)
-            { 
-            if (this.lastPos != this.myClientPlayer.transform.position || this.lastRot != this.myClientPlayer.transform.rotation || this.myClientPlayer.GetComponent<PlayerController>().IsShooting)
+            if (this.myClientPlayer != null)
             {
-                this.playerChanged = true;
-            }
-            else
-            {
-                this.playerChanged = false;
-            }
-            if (this.playerChanged)
-            {
-                tasks.Add(this.SendUpdate());
-            }
-            this.lastPos = new Vector3(this.myClientPlayer.transform.position.x, this.myClientPlayer.transform.position.y, this.myClientPlayer.transform.position.z);
-            this.lastRot = new Quaternion(this.myClientPlayer.transform.rotation.x, this.myClientPlayer.transform.rotation.y, this.myClientPlayer.transform.rotation.z, this.myClientPlayer.transform.rotation.w);
+                if (this.lastPos != this.myClientPlayer.transform.position || this.lastRot != this.myClientPlayer.transform.rotation || this.myClientPlayer.GetComponent<PlayerController>().IsShooting)
+                {
+                    this.playerChanged = true;
+                }
+                else
+                {
+                    this.playerChanged = false;
+                }
+                if (this.playerChanged)
+                {
+                    tasks.Add(this.SendUpdate());
+                }
+                this.lastPos = new Vector3(this.myClientPlayer.transform.position.x, this.myClientPlayer.transform.position.y, this.myClientPlayer.transform.position.z);
+                this.lastRot = new Quaternion(this.myClientPlayer.transform.rotation.x, this.myClientPlayer.transform.rotation.y, this.myClientPlayer.transform.rotation.z, this.myClientPlayer.transform.rotation.w);
             }
             //This code has been moved to the HandleIncomignMessage method as this calls it to often
             //if (gp != null)
@@ -93,13 +97,13 @@ public class Client : MonoBehaviour {
         {
             if (this._serverAdress.text == "" && this._port.text == "")
             {
-                _client.Connect("62.116.202.203", 42424);
-                _tcpClient.Connect("62.116.202.203", 42424);
+                networkClient.Connect("62.116.202.203", "42424");
+                networkClient.Connect("62.116.202.203", "42424");
             }
             else
             {
-                _client.Connect(_serverAdress.text, Convert.ToInt32(_port.text));
-                _tcpClient.Connect(_serverAdress.text, Convert.ToInt32(_port.text));
+                networkClient.Connect(_serverAdress.text, _port.text);
+                networkClient.Connect(_serverAdress.text, _port.text);
             }
         }
         catch (Exception e)
@@ -107,23 +111,7 @@ public class Client : MonoBehaviour {
             Debug.Log("[ERROR] " + e.Message);
         }
 
-        if (_client.Client.Connected && _tcpClient.Connected)
-        {
-            Debug.Log("Connected to the server at " + _client.Client.RemoteEndPoint);
-
-            _running = true;
-            msgStream = _tcpClient.GetStream();
-            //// Hook up some packet command handlers
-            //commandHandlers["message"] = HandleMessage;
-            //// Hook up some packet command handlers
-            //commandHandlers["input"] = HandleInput;
-            //commandHandlers["update"] = cmdUpdate;
-            commandHandlers["id"] = HandleId;
-            commandHandlers["myId"] = HandleMyId;
-            commandHandlers["disconnect"] = HandleDisconnect;
-            //Run();
-            
-        }
+        
     }
     /// <summary>
     /// cmdUpdate sørger for at de beskeder der kommer fra serveren om andre spilleres handlinger bliver udført clientside også
@@ -133,25 +121,25 @@ public class Client : MonoBehaviour {
     private void cmdUpdate(string message)
     {
         string[] splitString = message.Split(':');
-        if(!(splitString[0] == myClientPlayer.GetComponent<Player>().MyId.ToString()))
+        if (!(splitString[0] == myClientPlayer.GetComponent<Player>().MyId.ToString()))
             foreach (var player in players)
             {
-            if (player.MyId.ToString() == splitString[0])
-            {
-
-                Vector3 pos = new Vector3(float.Parse(splitString[1], CultureInfo.InvariantCulture.NumberFormat), float.Parse(splitString[2], CultureInfo.InvariantCulture.NumberFormat), float.Parse(splitString[3], CultureInfo.InvariantCulture.NumberFormat));
-                Quaternion rot = new Quaternion(float.Parse(splitString[4], CultureInfo.InvariantCulture.NumberFormat), float.Parse(splitString[5], CultureInfo.InvariantCulture.NumberFormat), float.Parse(splitString[6], CultureInfo.InvariantCulture.NumberFormat), float.Parse(splitString[7], CultureInfo.InvariantCulture.NumberFormat));
-                bool isShooting = Convert.ToBoolean(splitString[8]);
-                int hp = Convert.ToInt32(splitString[9]);
-                player.gameObject.transform.position = pos;
-                player.gameObject.transform.rotation = rot;
-                player.gameObject.GetComponent<Health>().currentHealth = hp;
-                if (isShooting)
+                if (player.MyId.ToString() == splitString[0])
                 {
-                    player.gameObject.GetComponent<Player>().CmdFire();
+
+                    Vector3 pos = new Vector3(float.Parse(splitString[1], CultureInfo.InvariantCulture.NumberFormat), float.Parse(splitString[2], CultureInfo.InvariantCulture.NumberFormat), float.Parse(splitString[3], CultureInfo.InvariantCulture.NumberFormat));
+                    Quaternion rot = new Quaternion(float.Parse(splitString[4], CultureInfo.InvariantCulture.NumberFormat), float.Parse(splitString[5], CultureInfo.InvariantCulture.NumberFormat), float.Parse(splitString[6], CultureInfo.InvariantCulture.NumberFormat), float.Parse(splitString[7], CultureInfo.InvariantCulture.NumberFormat));
+                    bool isShooting = Convert.ToBoolean(splitString[8]);
+                    int hp = Convert.ToInt32(splitString[9]);
+                    player.gameObject.transform.position = pos;
+                    player.gameObject.transform.rotation = rot;
+                    player.gameObject.GetComponent<Health>().currentHealth = hp;
+                    if (isShooting)
+                    {
+                        player.gameObject.GetComponent<Player>().CmdFire();
+                    }
                 }
             }
-        }
     }
     /// <summary>
     /// Når man første gang konnekter eller andre konnekter til serveren sendes deres id ud til 
@@ -161,22 +149,23 @@ public class Client : MonoBehaviour {
     /// <returns></returns>
     private async Task HandleId(string message)
     {
-        if (this.weCanSpawnOthers) { 
-        bool foundId = false;
-        foreach (var player in players)
+        if (this.weCanSpawnOthers)
         {
-            if (player.MyId.ToString() == message)
+            bool foundId = false;
+            foreach (var player in players)
             {
-                foundId = true;
+                if (player.MyId.ToString() == message)
+                {
+                    foundId = true;
+                }
             }
-        }
-        if (!foundId)
-        {
-            GameObject go = GameObject.Instantiate(playerPrefab);
+            if (!foundId)
+            {
+                GameObject go = GameObject.Instantiate(playerPrefab);
                 Destroy(go.GetComponent<PlayerController>());
                 go.GetComponent<Player>().MyId = Convert.ToInt32(message);
                 this.players.Add(go.GetComponent<Player>());
-        }
+            }
         }
     }
 
@@ -191,7 +180,7 @@ public class Client : MonoBehaviour {
         try
         {
 
-            this.myClientPlayer =  Instantiate(playerPrefab);
+            this.myClientPlayer = Instantiate(playerPrefab);
             this.myClientPlayer.GetComponent<Player>().MyId = Convert.ToInt32(message);
             this.players.Add(this.myClientPlayer.GetComponent<Player>());
             this.weCanSpawnOthers = true;
@@ -214,12 +203,12 @@ public class Client : MonoBehaviour {
             if (p.MyId.ToString() == message)
             {
                 goToDelete = p.gameObject;
-                
+
             }
         }
         players.Remove(goToDelete.GetComponent<Player>());
-        if(goToDelete != null)
-        GameObject.Destroy(goToDelete);
+        if (goToDelete != null)
+            GameObject.Destroy(goToDelete);
         foreach (Player p in players)
         {
             if (p.MyId > Convert.ToInt32(message))
@@ -253,16 +242,16 @@ public class Client : MonoBehaviour {
                 string jsonString = Encoding.UTF8.GetString(jsonBuffer);
                 GamePacket packet = GamePacket.FromJson(jsonString);
                 // Dispatch it
-                if(packet.Command != "update")
-                try
-                {
-                    await commandHandlers[packet.Command](packet.Message);
-                }
-                catch (KeyNotFoundException)
-                {
-                }
+                if (packet.Command != "update")
+                    try
+                    {
+                        await commandHandlers[packet.Command](packet.Message);
+                    }
+                    catch (KeyNotFoundException)
+                    {
+                    }
             }
-            
+
             try
             {
 
@@ -271,7 +260,7 @@ public class Client : MonoBehaviour {
                 //{
 
 
-                    _client.BeginReceive(DataReceived, _client);
+                _client.BeginReceive(DataReceived, _client);
                 // There must be some incoming data, the first two bytes are the size of the Packet
                 //byte[] lengthBuffer = new byte[2];
                 //await msgStream.ReadAsync(lengthBuffer, 0, 2);
@@ -293,7 +282,7 @@ public class Client : MonoBehaviour {
                     catch (KeyNotFoundException)
                     {
                     }
-                    //}
+                //}
             }
             catch (Exception)
             {
@@ -319,10 +308,10 @@ public class Client : MonoBehaviour {
         string receivedText = Encoding.UTF8.GetString(receivedBytes);
         gp = GamePacket.FromJson(receivedText);
         Debug.Log(gp.ToString());
-        
+
         // Restart listening for udp data packages
         c.BeginReceive(DataReceived, ar.AsyncState);
-       
+
     }
     /// <summary>
     /// Sender vores player information som en gamepacket via UDP
@@ -345,7 +334,7 @@ public class Client : MonoBehaviour {
             // Send the packet
             //await msgStream.WriteAsync(packetBuffer, 0, packetBuffer.Length);
             //_client.Send(packetBuffer, packetBuffer.Length);
-            _client.Send(jsonBuffer,jsonBuffer.Length);
+            _client.Send(jsonBuffer, jsonBuffer.Length);
         }
         catch (Exception se)
         {
@@ -354,6 +343,8 @@ public class Client : MonoBehaviour {
     }
     string playerinfo;
 
+    
+
     /// <summary>
     /// SendUpdate laver vores player data om til en streng som vi så lavet til en gamepacket og sender via metoden SendPacket
     /// </summary>
@@ -361,16 +352,16 @@ public class Client : MonoBehaviour {
     async Task SendUpdate()
     {
         CultureInfo cIn = CultureInfo.InvariantCulture;
-        playerinfo = this.myClientPlayer.GetComponent<Player>().MyId.ToString(cIn) + 
-            ":" + this.myClientPlayer.transform.position.x.ToString(cIn) + 
-            ":" + this.myClientPlayer.transform.position.y.ToString(cIn) + 
-            ":" + this.myClientPlayer.transform.position.z.ToString(cIn) +
-            ":" + this.myClientPlayer.transform.rotation.x.ToString(cIn) + 
-            ":" + this.myClientPlayer.transform.rotation.y.ToString(cIn) + 
-            ":" + this.myClientPlayer.transform.rotation.z.ToString(cIn) +
-            ":" + this.myClientPlayer.transform.rotation.w.ToString(cIn) +
-            ":" + this.myClientPlayer.GetComponent<PlayerController>().IsShooting.ToString(cIn) +
-            ":" + this.myClientPlayer.GetComponent<Health>().currentHealth.ToString(cIn);
+        playerinfo = this.myClientPlayer.GetComponent<Player>().MyId.ToString(cIn) +
+                     ":" + this.myClientPlayer.transform.position.x.ToString(cIn) +
+                     ":" + this.myClientPlayer.transform.position.y.ToString(cIn) +
+                     ":" + this.myClientPlayer.transform.position.z.ToString(cIn) +
+                     ":" + this.myClientPlayer.transform.rotation.x.ToString(cIn) +
+                     ":" + this.myClientPlayer.transform.rotation.y.ToString(cIn) +
+                     ":" + this.myClientPlayer.transform.rotation.z.ToString(cIn) +
+                     ":" + this.myClientPlayer.transform.rotation.w.ToString(cIn) +
+                     ":" + this.myClientPlayer.GetComponent<PlayerController>().IsShooting.ToString(cIn) +
+                     ":" + this.myClientPlayer.GetComponent<Health>().currentHealth.ToString(cIn);
         await this.SendPacket(new GamePacket("update", playerinfo));
     }
 }
