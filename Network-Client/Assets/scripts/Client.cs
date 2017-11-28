@@ -149,18 +149,19 @@ public class Client : MonoBehaviour
     /// <returns></returns>
     private async Task HandleId(string message)
     {
-        if (this.weCanSpawnOthers)
+        Debug.Log("Entered HandleId method");
+        if (this.weCanSpawnOthers) { 
+        bool foundId = false;
+        foreach (var player in players)
         {
-            bool foundId = false;
-            foreach (var player in players)
+            if (player.MyId.ToString() == message)
             {
-                if (player.MyId.ToString() == message)
-                {
-                    foundId = true;
-                }
+                foundId = true;
             }
-            if (!foundId)
-            {
+        }
+        if (!foundId)
+        {
+                Debug.Log("Found new player on id");
                 GameObject go = GameObject.Instantiate(playerPrefab);
                 Destroy(go.GetComponent<PlayerController>());
                 go.GetComponent<Player>().MyId = Convert.ToInt32(message);
@@ -177,10 +178,12 @@ public class Client : MonoBehaviour
     /// <returns></returns>
     private async Task HandleMyId(string message)
     {
+        Debug.Log("Entered HandleMyId method");
         try
         {
-
-            this.myClientPlayer = Instantiate(playerPrefab);
+            Debug.Log("Entered Try method");
+            this.myClientPlayer =  Instantiate(playerPrefab);
+            Debug.Log("Spawned player");
             this.myClientPlayer.GetComponent<Player>().MyId = Convert.ToInt32(message);
             this.players.Add(this.myClientPlayer.GetComponent<Player>());
             this.weCanSpawnOthers = true;
@@ -225,12 +228,14 @@ public class Client : MonoBehaviour
     /// <returns></returns>
     private async Task HandleIncomingPackets()
     {
+        Debug.Log("Entered HandleIncomingPacket method");
         try
         {
+            Debug.Log("Entered Try inside method");
             // Check for new incomding messages
             if (_tcpClient.Available > 0)
             {
-
+                Debug.Log("Data was available");
                 // There must be some incoming data, the first two bytes are the size of the Packet
                 byte[] lengthBuffer = new byte[2];
                 await msgStream.ReadAsync(lengthBuffer, 0, 2);
@@ -241,15 +246,17 @@ public class Client : MonoBehaviour
                 // Convert it into a packet datatype
                 string jsonString = Encoding.UTF8.GetString(jsonBuffer);
                 GamePacket packet = GamePacket.FromJson(jsonString);
+                Debug.Log("Data: " + packet.Command + " : " + packet.Message);
                 // Dispatch it
                 if (packet.Command != "update")
-                    try
-                    {
+                try
+                {
+                        Debug.Log("About to call commandHandlers method with message");
                         await commandHandlers[packet.Command](packet.Message);
-                    }
-                    catch (KeyNotFoundException)
-                    {
-                    }
+                }
+                catch (KeyNotFoundException)
+                {
+                }
             }
 
             try
@@ -259,7 +266,7 @@ public class Client : MonoBehaviour
                 //if (_client.Available > 0)
                 //{
 
-
+                Debug.Log("Begining to recieve data");
                 _client.BeginReceive(DataReceived, _client);
                 // There must be some incoming data, the first two bytes are the size of the Packet
                 //byte[] lengthBuffer = new byte[2];
@@ -275,6 +282,7 @@ public class Client : MonoBehaviour
                 if (gp != null)
                     try
                     {
+                        Debug.Log("packet is about to be used in the cmdUpdate method");
                         cmdUpdate(gp.Message);
                         //await commandHandlers[gp.Command](gp.Message);
                         // gp = null;
@@ -323,6 +331,7 @@ public class Client : MonoBehaviour
     {
         try
         {
+            Debug.Log("Entered the SendPacket try-Catch");
             // convert JSON to buffer and its length to a 16 bit unsigned integer buffer
             string str = packet.ToJson();
             byte[] jsonBuffer = Encoding.UTF8.GetBytes(str);
@@ -334,7 +343,9 @@ public class Client : MonoBehaviour
             // Send the packet
             //await msgStream.WriteAsync(packetBuffer, 0, packetBuffer.Length);
             //_client.Send(packetBuffer, packetBuffer.Length);
-            _client.Send(jsonBuffer, jsonBuffer.Length);
+            Debug.Log("About to sent the UDP message");
+            _client.Send(jsonBuffer,jsonBuffer.Length);
+            Debug.Log("UDP message sent");
         }
         catch (Exception se)
         {
@@ -351,6 +362,7 @@ public class Client : MonoBehaviour
     /// <returns></returns>
     async Task SendUpdate()
     {
+        Debug.Log("Entered SendUpdate");
         CultureInfo cIn = CultureInfo.InvariantCulture;
         playerinfo = this.myClientPlayer.GetComponent<Player>().MyId.ToString(cIn) +
                      ":" + this.myClientPlayer.transform.position.x.ToString(cIn) +
