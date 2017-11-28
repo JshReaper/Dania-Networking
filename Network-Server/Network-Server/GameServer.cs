@@ -71,7 +71,7 @@
                 }
                 try
                 {
-                    TcpClient toDisconnect = null;
+                    List<TcpClient> clientsToRemove = new List<TcpClient>();
                     foreach (var client in this.lobby)
                     {
                         bool part1 = client.Client.Poll(1000, SelectMode.SelectRead);
@@ -79,7 +79,8 @@
                         bool disconnected = part2 && part1;
                         if (disconnected)
                         {
-                            toDisconnect = client;
+                            clientsToRemove.Add(client);
+                            Console.WriteLine(this.lobby.IndexOf(client).ToString());
                             foreach (var tcpClient in this.lobby)
                             {
                                 ConnectionTasks.Add(
@@ -89,10 +90,15 @@
                             }
                         }
                     }
-                    if (toDisconnect != null)
+                    if (clientsToRemove.Count > 0)
                     {
-                        this.clients.Remove(toDisconnect);
-                        this.lobby.Remove(toDisconnect);
+                        foreach (var tcpClient in clientsToRemove)
+                        {
+
+                            this.clients.Remove(tcpClient);
+                            this.lobby.Remove(tcpClient);
+                        }
+                        clientsToRemove.Clear();
                     }
                 }
                 catch
