@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Encrypt;
 
 public class NetworkClient
 {
@@ -83,8 +85,8 @@ public class NetworkClient
                               ":" + this.myClientPlayer.transform.rotation.w.ToString(cIn) +
                               ":" + this.myClientPlayer.GetComponent<PlayerController>().IsShooting.ToString(cIn) +
                               ":" + this.myClientPlayer.GetComponent<Health>().currentHealth.ToString(cIn);*/
-        
-        await this.SendPacket(new GamePacket("update", this.Playerinfo));
+       
+        await this.SendPacket(new GamePacket("update", Kryptor.Encrypt<RijndaelManaged>(this.Playerinfo, "password", "salt")));
         PlayerChanged = false;
     }
 
@@ -123,7 +125,7 @@ public class NetworkClient
         // Debug.Log(receivedIpEndPoint.ToString());
         // Convert data to UTF8 and print in console
         string receivedText = Encoding.UTF8.GetString(receivedBytes);
-        this.Gp = GamePacket.FromJson(receivedText);
+        this.Gp = GamePacket.FromJson(Kryptor.Decrypt<RijndaelManaged>(receivedText, "password", "salt"));
 
         // Restart listening for udp data packages
         c.BeginReceive(this.DataReceived, ar.AsyncState);
