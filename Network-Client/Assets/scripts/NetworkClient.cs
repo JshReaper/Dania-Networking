@@ -86,7 +86,7 @@ public class NetworkClient
                               ":" + this.myClientPlayer.GetComponent<PlayerController>().IsShooting.ToString(cIn) +
                               ":" + this.myClientPlayer.GetComponent<Health>().currentHealth.ToString(cIn);*/
        
-        await this.SendPacket(new GamePacket("update", Kryptor.Encrypt<RijndaelManaged>(this.Playerinfo, "password", "salt")));
+        await this.SendPacket(new GamePacket("update", this.Playerinfo));
         PlayerChanged = false;
     }
 
@@ -95,7 +95,7 @@ public class NetworkClient
         try
         {
             // convert JSON to buffer and its length to a 16 bit unsigned integer buffer
-            string str = packet.ToJson();
+            string str = Kryptor.Encrypt<RijndaelManaged>(packet.ToJson(), "password", "salt");
             byte[] jsonBuffer = Encoding.UTF8.GetBytes(str);
             byte[] lengthBuffer = BitConverter.GetBytes(Convert.ToUInt16(jsonBuffer.Length));
 
