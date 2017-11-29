@@ -83,6 +83,7 @@ public class NetworkClient
                               ":" + this.myClientPlayer.transform.rotation.w.ToString(cIn) +
                               ":" + this.myClientPlayer.GetComponent<PlayerController>().IsShooting.ToString(cIn) +
                               ":" + this.myClientPlayer.GetComponent<Health>().currentHealth.ToString(cIn);*/
+        
         await this.SendPacket(new GamePacket("update", this.Playerinfo));
         PlayerChanged = false;
     }
