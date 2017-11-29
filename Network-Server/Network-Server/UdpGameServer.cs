@@ -45,7 +45,14 @@
             {
                 if (this.server.Available > 0)
                 {
-                    this.server.BeginReceive(this.DataReceived, this.server);
+                    try
+                    {
+                        this.server.BeginReceive(this.DataReceived, this.server);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
                     Thread.Sleep(10);
                 }
                 if (this.playersToConnect.Count > 0)
