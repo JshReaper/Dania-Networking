@@ -182,6 +182,7 @@ public class Client : MonoBehaviour
             {
                 Debug.Log("Found new player on id");
                 GameObject go = Instantiate(this.playerPrefab);
+                Destroy(go.GetComponentInChildren<Camera>());
                 Destroy(go.GetComponent<PlayerController>());
                 go.GetComponent<Player>().MyId = Convert.ToInt32(message);
                 this.players.Add(go.GetComponent<Player>());
@@ -202,6 +203,8 @@ public class Client : MonoBehaviour
         try
         {
             Debug.Log("Entered Try method");
+            Destroy(GameObject.FindGameObjectWithTag("menuCam"));
+            Destroy(GameObject.FindGameObjectWithTag("menu"));
             this.myClientPlayer = Instantiate(this.playerPrefab);
             Debug.Log("Spawned player");
             this.myClientPlayer.GetComponent<Player>().MyId = Convert.ToInt32(message);
