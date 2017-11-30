@@ -107,7 +107,7 @@
                                 try
                                 {
                                     connectedPlayer.Serialize();
-                                    byte[] toSend = Encoding.UTF8.GetBytes(Kryptor.Encrypt<RijndaelManaged>(gamePacket.ToJson(),"password","salt"));
+                                    byte[] toSend = Encoding.Unicode.GetBytes(Kryptor.Encrypt<RijndaelManaged>(gamePacket.ToJson(),"password","toppersalt"));
                                     this.server.SendAsync(toSend, toSend.Length, connectedPlayer);
                                     
                                 }
@@ -154,9 +154,9 @@
 
                 Byte[] receivedBytes = c.EndReceive(ar, ref receivedIpEndPoint);
 
-                // Convert data to UTF8 and print in console
-                string receivedText = Encoding.UTF8.GetString(receivedBytes);
-                this.packetsToSend.Add(GamePacket.FromJson(Kryptor.Decrypt<RijndaelManaged>(receivedText,"password","salt")));
+                // Convert data to Unicode and print in console
+                string receivedText = Encoding.Unicode.GetString(receivedBytes);
+                this.packetsToSend.Add(GamePacket.FromJson(Kryptor.Decrypt<RijndaelManaged>(receivedText,"password","toppersalt")));
 
                 Console.Write(receivedIpEndPoint + ": " + receivedText + Environment.NewLine);
                 bool alreadyConnected = false;

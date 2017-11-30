@@ -144,7 +144,7 @@
             try
             {
                 // convert JSON to buffer and its length to a 16 bit unsigned integer buffer
-                byte[] jsonBuffer = Encoding.UTF8.GetBytes(packet.ToJson());
+                byte[] jsonBuffer = Encoding.Unicode.GetBytes(packet.ToJson());
                 byte[] lengthBuffer = BitConverter.GetBytes(Convert.ToUInt16(jsonBuffer.Length));
 
                 // Join the buffers
@@ -192,7 +192,7 @@
                 await msgStream.ReadAsync(jsonBuffer, 0, jsonBuffer.Length);
 
                 // Convert it into a packet datatype
-                string jsonString = Encoding.UTF8.GetString(jsonBuffer);
+                string jsonString = Encoding.Unicode.GetString(jsonBuffer);
                 packet = GamePacket.FromJson(jsonString);
             }
             catch (Exception e)

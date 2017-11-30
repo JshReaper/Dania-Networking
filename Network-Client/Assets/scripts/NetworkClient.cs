@@ -94,7 +94,7 @@ public class NetworkClient
         try
         {
             // convert JSON to buffer and its length to a 16 bit unsigned integer buffer
-            string str = Kryptor.Encrypt<RijndaelManaged>(packet.ToJson(), "password", "salt");
+            string str = Kryptor.Encrypt<RijndaelManaged>(packet.ToJson(), "password", "toppersalt");
             byte[] jsonBuffer = Encoding.Unicode.GetBytes(str);
             byte[] lengthBuffer = BitConverter.GetBytes(Convert.ToUInt16(jsonBuffer.Length));
 
@@ -124,7 +124,7 @@ public class NetworkClient
         // Debug.Log(receivedIpEndPoint.ToString());
         // Convert data to Unicode and print in console
         string receivedText = Encoding.Unicode.GetString(receivedBytes);
-        this.Gp = GamePacket.FromJson(Kryptor.Decrypt<RijndaelManaged>(receivedText, "password", "salt"));
+        this.Gp = GamePacket.FromJson(Kryptor.Decrypt<RijndaelManaged>(receivedText, "password", "toppersalt"));
 
         // Restart listening for udp data packages
         c.BeginReceive(this.DataReceived, ar.AsyncState);

@@ -10,7 +10,7 @@
         public static string Encrypt<T>(string value, string password, string salt)
             where T : SymmetricAlgorithm, new()
         {
-            DeriveBytes rgb = new Rfc2898DeriveBytes(password, Encoding.UTF8.GetBytes(salt));
+            DeriveBytes rgb = new Rfc2898DeriveBytes(password, Encoding.Unicode.GetBytes(salt));
 
             SymmetricAlgorithm algorithm = new T();
 
@@ -23,7 +23,7 @@
             {
                 using (CryptoStream stream = new CryptoStream(buffer, transform, CryptoStreamMode.Write))
                 {
-                    using (StreamWriter writer = new StreamWriter(stream, Encoding.UTF8))
+                    using (StreamWriter writer = new StreamWriter(stream, Encoding.Unicode))
                     {
                         writer.Write(value);
                     }
@@ -36,7 +36,7 @@
         public static string Decrypt<T>(string text, string password, string salt)
             where T : SymmetricAlgorithm, new()
         {
-            DeriveBytes rgb = new Rfc2898DeriveBytes(password, Encoding.UTF8.GetBytes(salt));
+            DeriveBytes rgb = new Rfc2898DeriveBytes(password, Encoding.Unicode.GetBytes(salt));
 
             SymmetricAlgorithm algorithm = new T();
 
@@ -49,7 +49,7 @@
             {
                 using (CryptoStream stream = new CryptoStream(buffer, transform, CryptoStreamMode.Read))
                 {
-                    using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+                    using (StreamReader reader = new StreamReader(stream, Encoding.Unicode))
                     {
                         return reader.ReadToEnd();
                     }
