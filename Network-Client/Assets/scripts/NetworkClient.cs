@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
@@ -33,9 +33,8 @@ public class NetworkClient
         this.tcpClient = new TcpClient();
         this.t = new Thread(this.HandleUpdates);
         this.t.IsBackground = true;
-        
-    }
 
+    }
 
     public void Connect(string serverAdress, string port)
     {
@@ -85,7 +84,7 @@ public class NetworkClient
                               ":" + this.myClientPlayer.transform.rotation.w.ToString(cIn) +
                               ":" + this.myClientPlayer.GetComponent<PlayerController>().IsShooting.ToString(cIn) +
                               ":" + this.myClientPlayer.GetComponent<Health>().currentHealth.ToString(cIn);*/
-       
+
         await this.SendPacket(new GamePacket("update", this.Playerinfo));
         PlayerChanged = false;
     }
@@ -96,7 +95,7 @@ public class NetworkClient
         {
             // convert JSON to buffer and its length to a 16 bit unsigned integer buffer
             string str = Kryptor.Encrypt<RijndaelManaged>(packet.ToJson(), "password", "salt");
-            byte[] jsonBuffer = Encoding.UTF8.GetBytes(str);
+            byte[] jsonBuffer = Encoding.Unicode.GetBytes(str);
             byte[] lengthBuffer = BitConverter.GetBytes(Convert.ToUInt16(jsonBuffer.Length));
 
             // Join the buffers
@@ -123,8 +122,8 @@ public class NetworkClient
         byte[] receivedBytes = c.EndReceive(ar, ref receivedIpEndPoint);
 
         // Debug.Log(receivedIpEndPoint.ToString());
-        // Convert data to UTF8 and print in console
-        string receivedText = Encoding.UTF8.GetString(receivedBytes);
+        // Convert data to Unicode and print in console
+        string receivedText = Encoding.Unicode.GetString(receivedBytes);
         this.Gp = GamePacket.FromJson(Kryptor.Decrypt<RijndaelManaged>(receivedText, "password", "salt"));
 
         // Restart listening for udp data packages
@@ -148,7 +147,7 @@ public class NetworkClient
                 await this.msgStream.ReadAsync(jsonBuffer, 0, jsonBuffer.Length);
 
                 // Convert it into a packet datatype
-                string jsonString = Encoding.UTF8.GetString(jsonBuffer);
+                string jsonString = Encoding.Unicode.GetString(jsonBuffer);
                 GamePacket packet = GamePacket.FromJson(jsonString);
 
                 // Dispatch it
@@ -188,7 +187,7 @@ public class NetworkClient
 
     public string MyIdMsg { get; private set; }
 
-    public bool MyIdMsgAvailable { get;  set; }
+    public bool MyIdMsgAvailable { get; set; }
 
     private async Task HandleMyId(string message)
     {
@@ -221,7 +220,7 @@ public class NetworkClient
                 {
                     tasks.Add(this.SendUpdate());
                 }
-                
+
             }
             Thread.Sleep(10);
         }
